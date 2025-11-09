@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Software Development Cost Estimator</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 40px;
+        }
+
+        .input-section {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+        }
+
+        .input-section h2 {
+            color: #667eea;
+            margin-bottom: 25px;
+            font-size: 1.8em;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-group label {
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+            font-size: 0.95em;
+        }
+
+        .form-group input,
+        .form-group select {
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: all 0.3s ease;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .calculate-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            font-size: 1.2em;
+            font-weight: 600;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+            margin-top: 20px;
+            width: 100%;
+        }
+
+        .calculate-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .calculate-btn:active {
+            transform: translateY(0);
+        }
+
+        .results-section {
+            display: none;
+            margin-top: 30px;
+        }
+
+        .results-section.active {
+            display: block;
+            animation: slideIn 0.5s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .summary-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .summary-card {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            border-left: 5px solid #667eea;
+            transition: transform 0.3s ease;
+        }
+
+        .summary-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .summary-card h3 {
+            color: #666;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+        }
+
+        .summary-card .value {
+            font-size: 2em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .summary-card .percentage {
+            color: #28a745;
+            font-size: 0.9em;
+            margin-top: 5px;
+        }
+
+        .details-table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+
+        .details-table h3 {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px;
+            font-size: 1.5em;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        thead {
+            background: #f8f9fa;
+        }
+
+        th, td {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        th {
+            font-weight: 600;
+            color: #667eea;
+            text-transform: uppercase;
+            font-size: 0.85em;
+        }
+
+        tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .amount {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .positive {
+            color: #28a745;
+        }
+
+        .warning {
+            color: #ffc107;
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            margin-top: 30px;
+        }
+
+        .chart-container h3 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .expense-bar {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .expense-label {
+            min-width: 200px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .bar-container {
+            flex: 1;
+            height: 30px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            overflow: hidden;
+            margin: 0 15px;
+        }
+
+        .bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            padding-right: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 0.85em;
+            transition: width 1s ease;
+        }
+
+        .expense-value {
+            min-width: 120px;
+            text-align: right;
+            font-weight: 600;
+            color: #667eea;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 1.8em;
+            }
+
+            .content {
+                padding: 20px;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .expense-label {
+                min-width: 120px;
+                font-size: 0.9em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>💻 Software Development Cost Estimator</h1>
+            <p>Professional project cost analysis and profit calculation</p>
+        </div>
+
+        <div class="content">
+            <div class="input-section">
+                <h2>Project Details</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="softwareCost">Software Development Cost (PKR)</label>
+                        <input type="number" id="softwareCost" value="60000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="tradePrice">Trade Price per Unit (PKR)</label>
+                        <input type="number" id="tradePrice" value="90000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="tradeQty">Trade Quantity</label>
+                        <input type="number" id="tradeQty" value="50" min="1">
+                    </div>
+                    <div class="form-group">
+                        <label for="retailPrice">Retail Price per Unit (PKR)</label>
+                        <input type="number" id="retailPrice" value="0" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="retailQty">Retail Quantity</label>
+                        <input type="number" id="retailQty" value="0" min="0">
+                    </div>
+                </div>
+            </div>
+
+            <div class="input-section">
+                <h2>Operating Expenses</h2>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="servicesMaterial">Services & Material (PKR)</label>
+                        <input type="number" id="servicesMaterial" value="200000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="marketingExpenses">Marketing Expenses (PKR)</label>
+                        <input type="number" id="marketingExpenses" value="200000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="logistics">Logistics (PKR)</label>
+                        <input type="number" id="logistics" value="300000" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="teamExpenses">Team Expenses (PKR)</label>
+                        <input type="number" id="teamExpenses" value="0" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="dealerCommission">Dealer Commission (PKR)</label>
+                        <input type="number" id="dealerCommission" value="0" min="0" step="1000">
+                    </div>
+                    <div class="form-group">
+                        <label for="otherExpenses">Other Fixed Expenses (PKR)</label>
+                        <input type="number" id="otherExpenses" value="0" min="0" step="1000">
+                    </div>
+                </div>
+            </div>
+
+            <button class="calculate-btn" onclick="calculateEstimate()">📊 Calculate Estimate</button>
+
+            <div class="results-section" id="resultsSection">
+                <h2 style="color: #667eea; margin-bottom: 20px; font-size: 2em;">Financial Summary</h2>
+                
+                <div class="summary-cards">
+                    <div class="summary-card">
+                        <h3>Net Sales</h3>
+                        <div class="value" id="netSales">Rs 0</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Gross Profit</h3>
+                        <div class="value" id="grossProfit">Rs 0</div>
+                        <div class="percentage" id="grossProfitPercent">0%</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Total Expenses</h3>
+                        <div class="value" id="totalExpenses">Rs 0</div>
+                        <div class="percentage" id="expensePercent">0%</div>
+                    </div>
+                    <div class="summary-card">
+                        <h3>Net Profit</h3>
+                        <div class="value" id="netProfit">Rs 0</div>
+                        <div class="percentage positive" id="netProfitPercent">0%</div>
+                    </div>
+                </div>
+
+                <div class="details-table">
+                    <h3>Detailed Breakdown</h3>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Item</th>
+                                <th>Amount</th>
+                                <th>% of Sales</th>
+                            </tr>
+                        </thead>
+                        <tbody id="detailsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="chart-container">
+                    <h3>Expense Distribution</h3>
+                    <div id="expenseChart"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function formatCurrency(amount) {
+            return new Intl.NumberFormat('en-PK', {
+                style: 'currency',
+                currency: 'PKR',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0
+            }).format(amount);
+        }
+
+        function formatPercent(value) {
+            return value.toFixed(2) + '%';
+        }
+
+        function calculateEstimate() {
+            // Get input values
+            const softwareCost = parseFloat(document.getElementById('softwareCost').value) || 0;
+            const tradePrice = parseFloat(document.getElementById('tradePrice').value) || 0;
+            const tradeQty = parseFloat(document.getElementById('tradeQty').value) || 0;
+            const retailPrice = parseFloat(document.getElementById('retailPrice').value) || 0;
+            const retailQty = parseFloat(document.getElementById('retailQty').value) || 0;
+            
+            const servicesMaterial = parseFloat(document.getElementById('servicesMaterial').value) || 0;
+            const marketingExpenses = parseFloat(document.getElementById('marketingExpenses').value) || 0;
+            const logistics = parseFloat(document.getElementById('logistics').value) || 0;
+            const teamExpenses = parseFloat(document.getElementById('teamExpenses').value) || 0;
+            const dealerCommission = parseFloat(document.getElementById('dealerCommission').value) || 0;
+            const otherExpenses = parseFloat(document.getElementById('otherExpenses').value) || 0;
+
+            // Calculate sales
+            const tradeSales = tradePrice * tradeQty;
+            const retailSales = retailPrice * retailQty;
+            const netSales = tradeSales + retailSales;
+
+            // Calculate cost and profit
+            const costOfProduction = softwareCost;
+            const grossProfit = netSales - costOfProduction;
+            const grossProfitPercent = netSales > 0 ? (grossProfit / netSales) * 100 : 0;
+
+            // Calculate expenses
+            const totalExpenses = servicesMaterial + marketingExpenses + logistics + 
+                                 teamExpenses + dealerCommission + otherExpenses;
+            const expensePercent = netSales > 0 ? (totalExpenses / netSales) * 100 : 0;
+
+            // Calculate net profit
+            const netProfit = grossProfit - totalExpenses;
+            const netProfitPercent = netSales > 0 ? (netProfit / netSales) * 100 : 0;
+
+            // Update summary cards
+            document.getElementById('netSales').textContent = formatCurrency(netSales);
+            document.getElementById('grossProfit').textContent = formatCurrency(grossProfit);
+            document.getElementById('grossProfitPercent').textContent = formatPercent(grossProfitPercent);
+            document.getElementById('totalExpenses').textContent = formatCurrency(totalExpenses);
+            document.getElementById('expensePercent').textContent = formatPercent(expensePercent);
+            document.getElementById('netProfit').textContent = formatCurrency(netProfit);
+            document.getElementById('netProfitPercent').textContent = formatPercent(netProfitPercent);
+
+            // Update net profit color
+            const netProfitElement = document.getElementById('netProfit');
+            const netProfitPercentElement = document.getElementById('netProfitPercent');
+            if (netProfit >= 0) {
+                netProfitElement.style.color = '#28a745';
+                netProfitPercentElement.style.color = '#28a745';
+            } else {
+                netProfitElement.style.color = '#dc3545';
+                netProfitPercentElement.style.color = '#dc3545';
+            }
+
+            // Build details table
+            const details = [
+                { name: 'Net Sales', amount: netSales, percent: 100 },
+                { name: 'Cost of Production', amount: costOfProduction, percent: netSales > 0 ? (costOfProduction / netSales) * 100 : 0 },
+                { name: 'Gross Profit', amount: grossProfit, percent: grossProfitPercent, highlight: true },
+                { name: '', amount: null, percent: null }, // Separator
+                { name: 'Services & Material', amount: servicesMaterial, percent: netSales > 0 ? (servicesMaterial / netSales) * 100 : 0 },
+                { name: 'Marketing Expenses', amount: marketingExpenses, percent: netSales > 0 ? (marketingExpenses / netSales) * 100 : 0 },
+                { name: 'Logistics', amount: logistics, percent: netSales > 0 ? (logistics / netSales) * 100 : 0 },
+                { name: 'Team Expenses', amount: teamExpenses, percent: netSales > 0 ? (teamExpenses / netSales) * 100 : 0 },
+                { name: 'Dealer Commission', amount: dealerCommission, percent: netSales > 0 ? (dealerCommission / netSales) * 100 : 0 },
+                { name: 'Other Fixed Expenses', amount: otherExpenses, percent: netSales > 0 ? (otherExpenses / netSales) * 100 : 0 },
+                { name: 'Total Expenses', amount: totalExpenses, percent: expensePercent, highlight: true },
+                { name: '', amount: null, percent: null }, // Separator
+                { name: 'Net Profit Before Tax', amount: netProfit, percent: netProfitPercent, highlight: true, profit: true }
+            ];
+
+            const tbody = document.getElementById('detailsTableBody');
+            tbody.innerHTML = '';
+            
+            details.forEach(item => {
+                if (item.amount === null) {
+                    const row = tbody.insertRow();
+                    row.style.height = '10px';
+                    row.style.background = '#f8f9fa';
+                    return;
+                }
+
+                const row = tbody.insertRow();
+                if (item.highlight) {
+                    row.style.fontWeight = '600';
+                    row.style.background = '#f8f9fa';
+                }
+                
+                const cell1 = row.insertCell(0);
+                const cell2 = row.insertCell(1);
+                const cell3 = row.insertCell(2);
+                
+                cell1.textContent = item.name;
+                cell2.textContent = formatCurrency(item.amount);
+                cell2.className = 'amount';
+                cell3.textContent = formatPercent(item.percent);
+                
+                if (item.profit) {
+                    cell2.style.color = item.amount >= 0 ? '#28a745' : '#dc3545';
+                    cell3.style.color = item.amount >= 0 ? '#28a745' : '#dc3545';
+                }
+            });
+
+            // Create expense chart
+            const expenses = [
+                { name: 'Services & Material', value: servicesMaterial },
+                { name: 'Marketing', value: marketingExpenses },
+                { name: 'Logistics', value: logistics },
+                { name: 'Team Expenses', value: teamExpenses },
+                { name: 'Dealer Commission', value: dealerCommission },
+                { name: 'Other Expenses', value: otherExpenses }
+            ].filter(e => e.value > 0);
+
+            const chartContainer = document.getElementById('expenseChart');
+            chartContainer.innerHTML = '';
+
+            const maxExpense = Math.max(...expenses.map(e => e.value));
+
+            expenses.forEach(expense => {
+                const barDiv = document.createElement('div');
+                barDiv.className = 'expense-bar';
+                
+                const percentage = maxExpense > 0 ? (expense.value / maxExpense) * 100 : 0;
+                
+                barDiv.innerHTML = `
+                    <div class="expense-label">${expense.name}</div>
+                    <div class="bar-container">
+                        <div class="bar-fill" style="width: ${percentage}%">
+                            ${formatPercent((expense.value / totalExpenses) * 100)}
+                        </div>
+                    </div>
+                    <div class="expense-value">${formatCurrency(expense.value)}</div>
+                `;
+                
+                chartContainer.appendChild(barDiv);
+            });
+
+            // Show results section
+            const resultsSection = document.getElementById('resultsSection');
+            resultsSection.classList.add('active');
+            resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }
+
+        // Auto-calculate on page load
+        window.addEventListener('load', calculateEstimate);
+    </script>
+</body>
+</html>
